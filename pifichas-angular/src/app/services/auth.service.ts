@@ -1,35 +1,40 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<any>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
+  private baseUrl = 'http://localhost:3000';
 
-  login(username: string, password: string): Observable<any> {
-    return new Observable(observer => {
-      setTimeout(() => {
-        const user = { username, role: 'teacher' };
-        localStorage.setItem('user', JSON.stringify(user));
-        this.currentUserSubject.next(user);
-        observer.next(user);
-        observer.complete();
-      }, 500);
-    });
+  constructor(private http: HttpClient) {}
+
+  login(correo: string, contrasenia: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/login`, { correo, contrasenia }).pipe(
+      map(res => {
+        if (res && res.profesor) {
+          localStorage.setItem('user', JSON.stringify(res.profesor));
+          return res.profesor;
+        } else {
+          throw new Error('Usuario o contraseña incorrectos');
+        }
+      }),
+      catchError(err => throwError(() => err))
+    );
   }
 
   logout(): void {
     localStorage.removeItem('user');
-    this.currentUserSubject.next(null);
   }
 
   getCurrentUser(): any {
-    return this.currentUserSubject.value;
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
   }
 
   isAuthenticated(): boolean {
-    return !!this.currentUserSubject.value;
+    return !!this.getCurrentUser();
   }
 }
