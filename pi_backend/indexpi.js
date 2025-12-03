@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 // 4. 🔑 RUTA DE AUTENTICACIÓN (POST /login)
 app.post('/login', (req, res) => {
     console.log('-------------------------------------------');
-    console.log('¡SOLICITUD DE LOGIN RECIBIDA DE FLUTTER!');
+    console.log('¡SOLICITUD DE LOGIN RECIBIDA!');
     
     // Obtiene los campos enviados desde Flutter
     const { correo, contrasenia } = req.body; 
